@@ -56,7 +56,7 @@
               {{ ticker.name }} - USD
             </dt>
             <dd class="mt-1 text-3xl font-semibold text-gray-900">
-              {{ ticker.price }}
+              {{ formatPrice(ticker.price) }}
             </dd>
           </div>
           <div class="w-full border-t border-gray-200"></div>
@@ -141,6 +141,12 @@ export default {
     };
   },
   methods: {
+    formatPrice(price) {
+      if (price !== "-") {
+        return price > 1 ? price.toFixed(2) : price.toPrecision(2);
+      }
+      return "-";
+    },
     add() {
       // передалал метод для большей читаемости ( метод вызывает метод )
       const currentTicker = {
@@ -152,39 +158,13 @@ export default {
       // this.updateTicker(currentTicker)
     },
     async updateTicker() {
-      // переработаный метод пофиксил логику удаления интервалов из-за того что мы сейчас запрашиваем сразу, кучу монеток и если их нет , то ничего не запрашиваем
       if (!this.tickers.length) return;
-      // убрали сет инвервал и переделали метод, так чтобы апи принимала все наши тикеры
-      // tickerName.intervalId = setInterval(async () => {
-      // ниже при вызове loadTicker перебираем все тикеры и передаем в метод все неймы
       const excahngeData = await loadTicker(this.tickers.map((t) => t.name));
-      // тут мы мутируем массив tickers чтобы обновлятьв нем цену из-за такого кода мы мужем убрать this.tickers.find((t) ....
       this.tickers.forEach((ticker) => {
+        // console.log(excahngeData);
         const price = excahngeData[ticker.name.toUpperCase()];
-        // из-за то что мы сменили апи и получаем 1 долар к тикеры, а не как раньше ,то цену нужно изменить
-        // раньше сработал бы такой вариант ticker.price = price
-        // добавляем фогику отформатированой цены
-        if (!ticker.price) {
-          ticker.price = "-";
-          return;
-        }
-        // если все ок, мы форматируем цену чтобы она показывала цену за 1 тикер в валюте
-        const normalizedPrice = 1 / price;
-        const formatedPrice =
-          normalizedPrice > 1
-            ? normalizedPrice.toFixed(2)
-            : normalizedPrice.toPrecision(2);
-
-        ticker.price = formatedPrice;
+        ticker.price = price ?? "-";
       });
-      // this.tickers.find((t) => t.name === tickerName.name).price =
-      //   excahngeData.USD > 1
-      //     ? excahngeData.USD.toFixed(2)
-      //     : excahngeData.USD.toPrecision(2);
-      // if (this.selectedTicker?.name === tickerName.name) {
-      //   this.graph.push(excahngeData.USD);
-      // }
-      // }, 3000);
       this.ticker = "";
     },
     deleteTicker(tickerToRemove) {

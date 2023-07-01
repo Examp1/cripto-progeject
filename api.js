@@ -6,5 +6,7 @@ export const loadTicker = async tickers => {
   const r = await fetch(
     `https://min-api.cryptocompare.com/data/price?fsym=USD&tsyms=${tickers.join(",")}&api_key=${API_KEy}`
   );
-  return r.json();
+  const tickerData = await r.json();
+  return Object.fromEntries(Object.entries(tickerData).map(([key, value]) => [key, 1 / value]))
+
 }
