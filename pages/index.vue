@@ -126,7 +126,7 @@
 </template>
 
 <script>
-import { loadTicker } from "@/api.js";
+import { subscribeToTiker } from "@/api.js";
 
 export default {
   name: "home-page",
@@ -135,7 +135,12 @@ export default {
       ticker: "",
       api_key:
         "0324c7a2351023626af2970665500fa37f105e33714c76344a8611428cf8e336",
-      tickers: [],
+      tickers: [
+        {
+          name: 'BTC',
+          price: '-'
+        }
+      ],
       selectedTicker: null,
       graph: [],
     };
@@ -155,18 +160,18 @@ export default {
         intervalId: null, // Добавляем переменную для хранения идентификатора интервала
       };
       this.tickers.push(currentTicker);
+      subscribeToTiker(currentTicker.name, () => {})
       // this.updateTicker(currentTicker)
     },
-    async updateTicker() {
-      if (!this.tickers.length) return;
-      const excahngeData = await loadTicker(this.tickers.map((t) => t.name));
-      this.tickers.forEach((ticker) => {
-        // console.log(excahngeData);
-        const price = excahngeData[ticker.name.toUpperCase()];
-        ticker.price = price ?? "-";
-      });
-      this.ticker = "";
-    },
+    // async updateTicker() {
+    //   if (!this.tickers.length) return;
+    //   const excahngeData = await loadTicker(this.tickers.map((t) => t.name));
+    //   this.tickers.forEach((ticker) => {
+    //     const price = excahngeData[ticker.name.toUpperCase()];
+    //     ticker.price = price ?? "-";
+    //   });
+    //   this.ticker = "";
+    // },
     deleteTicker(tickerToRemove) {
       const tickerIndex = this.tickers.findIndex((el) => el === tickerToRemove);
       if (tickerIndex !== -1) {
@@ -188,7 +193,12 @@ export default {
     },
   },
   created() {
-    setInterval(this.updateTicker, 5000);
+    // setInterval(this.updateTicker, 5000);
+    this.tickers.forEach(ticker => {
+      subscribeToTiker(ticker.name, (price) => {
+        console.log('ticker price changed to',price,ticker.name );
+      })
+    })
   },
 };
 </script>
