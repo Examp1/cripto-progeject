@@ -126,7 +126,7 @@
 </template>
 
 <script>
-import { subscribeToTiker } from "@/api.js";
+import { subscribeToTiker, unsubscribeFromTiker } from "@/api.js";
 
 export default {
   name: "home-page",
@@ -137,15 +137,22 @@ export default {
         "0324c7a2351023626af2970665500fa37f105e33714c76344a8611428cf8e336",
       tickers: [
         {
-          name: 'BTC',
-          price: '-'
-        }
+          name: "BTC",
+          price: "-",
+        },
       ],
       selectedTicker: null,
       graph: [],
     };
   },
   methods: {
+    updateTicker(tickerName, price) {
+      console.log(
+        this.tickers
+          .filter((t) => t.name === tickerName)
+          .forEach((t) => t.price = price)
+      );
+    },
     formatPrice(price) {
       if (price !== "-") {
         return price > 1 ? price.toFixed(2) : price.toPrecision(2);
@@ -160,25 +167,12 @@ export default {
         intervalId: null, // Добавляем переменную для хранения идентификатора интервала
       };
       this.tickers.push(currentTicker);
-      subscribeToTiker(currentTicker.name, () => {})
+      subscribeToTiker(currentTicker.name, () => {});
       // this.updateTicker(currentTicker)
     },
-    // async updateTicker() {
-    //   if (!this.tickers.length) return;
-    //   const excahngeData = await loadTicker(this.tickers.map((t) => t.name));
-    //   this.tickers.forEach((ticker) => {
-    //     const price = excahngeData[ticker.name.toUpperCase()];
-    //     ticker.price = price ?? "-";
-    //   });
-    //   this.ticker = "";
-    // },
     deleteTicker(tickerToRemove) {
-      const tickerIndex = this.tickers.findIndex((el) => el === tickerToRemove);
-      if (tickerIndex !== -1) {
-        const ticker = this.tickers[tickerIndex];
-        clearInterval(ticker.intervalId); // Остановка интервала
-        this.tickers.splice(tickerIndex, 1);
-      }
+      this.tickers.findIndex((el) => el === tickerToRemove);
+      unsubscribeFromTiker(tickerToRemove.name)
     },
     normalizeGraph() {
       const maxValue = Math.max(...this.graph);
@@ -194,11 +188,11 @@ export default {
   },
   created() {
     // setInterval(this.updateTicker, 5000);
-    this.tickers.forEach(ticker => {
-      subscribeToTiker(ticker.name, (price) => {
-        console.log('ticker price changed to',price,ticker.name );
-      })
-    })
+    this.tickers.forEach((ticker) => {
+      subscribeToTiker(ticker.name, (newPrice) =>
+        this.updateTicker(ticker.name, newPrice)
+      );
+    });
   },
 };
 </script>

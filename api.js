@@ -17,6 +17,8 @@ const API_KEy = "0324c7a2351023626af2970665500fa37f105e33714c76344a8611428cf8e33
 
 const tickersHandlers = new Map();
 
+console.log(tickersHandlers);
+
 const loadTicker = async () => {
   // debugger
   if (!tickersHandlers.size === 0) {
@@ -29,10 +31,12 @@ const loadTicker = async () => {
   const updatedPrices = await r.json();
   Object.fromEntries(Object.entries(updatedPrices).map(([key, value]) => [key, value.USD]))
 
-  Object.entries(updatedPrices).forEach(([currency, newPrice]) => {
-    const handler = tickersHandlers.get(currency) ?? [];
-    handler.forEach(fn => fn(newPrice))
+  // console.log(updatedPrices);
 
+  Object.entries(updatedPrices).forEach(([currency, newPrice]) => {
+    console.log(newPrice);
+    const handler = tickersHandlers.get(currency) ?? [];
+    handler.forEach(fn => fn(newPrice.USD))
   })
 }
 
@@ -40,6 +44,7 @@ const loadTicker = async () => {
 export const subscribeToTiker = (ticker, cb) => {
   const subscriber = tickersHandlers.get(ticker, []) || []
   tickersHandlers.set(ticker, [...subscriber, cb])
+  console.log(tickersHandlers);
 };
 
 export const unsubscribeFromTiker = (ticker, cb) => {
