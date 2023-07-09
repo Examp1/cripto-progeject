@@ -147,11 +147,9 @@ export default {
   },
   methods: {
     updateTicker(tickerName, price) {
-      console.log(
-        this.tickers
-          .filter((t) => t.name === tickerName)
-          .forEach((t) => t.price = price)
-      );
+      this.tickers
+        .filter((t) => t.name === tickerName)
+        .forEach((t) => (t.price = price));
     },
     formatPrice(price) {
       if (price !== "-") {
@@ -162,17 +160,17 @@ export default {
     add() {
       // передалал метод для большей читаемости ( метод вызывает метод )
       const currentTicker = {
-        name: this.ticker,
+        name: this.ticker.toUpperCase(),
         price: "-",
         intervalId: null, // Добавляем переменную для хранения идентификатора интервала
       };
       this.tickers.push(currentTicker);
-      subscribeToTiker(currentTicker.name, () => {});
+      subscribeToTiker(currentTicker.name, newPrice => this.updateTicker(currentTicker.name, newPrice));
       // this.updateTicker(currentTicker)
     },
     deleteTicker(tickerToRemove) {
-      this.tickers.findIndex((el) => el === tickerToRemove);
-      unsubscribeFromTiker(tickerToRemove.name)
+      this.tickers = this.tickers.filter((el) => el !== tickerToRemove);
+      unsubscribeFromTiker(tickerToRemove.name);
     },
     normalizeGraph() {
       const maxValue = Math.max(...this.graph);

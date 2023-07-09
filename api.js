@@ -47,9 +47,10 @@ export const subscribeToTiker = (ticker, cb) => {
   console.log(tickersHandlers);
 };
 
-export const unsubscribeFromTiker = (ticker, cb) => {
-  const subscriber = tickersHandlers.get(ticker, []) || []
-  tickersHandlers.set(ticker, subscriber.filter(fn !== cb))
+export const unsubscribeFromTiker = (ticker) => {
+  tickersHandlers.delete(ticker)
+  // const subscriber = tickersHandlers.get(ticker, []) || []
+  // tickersHandlers.set(ticker, subscriber.filter(fn !== cb))
 }
 
 
