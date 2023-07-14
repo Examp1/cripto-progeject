@@ -51,7 +51,7 @@ if (socket) {
   const AGGRINDEX = "5";
   socket.addEventListener("message", e => {
     const { TYPE: type, FROMSYMBOL: currency, PRICE: newPrice } = JSON.parse(e.data)
-    if (type !== AGGRINDEX) {
+    if (type !== AGGRINDEX || newPrice === undefined) {
       return
     }
     // debugger
