@@ -19,7 +19,8 @@
     "vue": "^2.7.10",
     "vue-flickity": "^1.2.1",
     "vue-server-renderer": "^2.7.10",
-    "vue-template-compiler": "^2.7.10"
+    "vue-template-compiler": "^2.7.10",
+    "websocket": "^1.0.34"
   },
   "devDependencies": {
     "@aceforth/nuxt-optimized-images": "^1.4.0",

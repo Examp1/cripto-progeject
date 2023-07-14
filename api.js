@@ -13,38 +13,40 @@
 // }
 
 // получать обновления стоимости криптовалюитных пар с апишки ( что что нужно на самом деле)
-const API_KEy = "0324c7a2351023626af2970665500fa37f105e33714c76344a8611428cf8e336"
+
+const API_KEY = "db08fd4dc7fe107d9e23172806cf758b07d49e410df0ac43425506f1b8068bc0"
+
+// const socket = new WebSocket(`wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`)
 
 const tickersHandlers = new Map();
 
-console.log(tickersHandlers);
+let socket;
 
-const loadTicker = async () => {
-  // debugger
-  if (!tickersHandlers.size === 0) {
-    return
-  }
 
-  const r = await fetch(
-    `https://min-api.cryptocompare.com/data/pricemulti?fsyms=${[...tickersHandlers.keys()]}&tsyms=USD&api_key=${API_KEy}`
-  );
-  const updatedPrices = await r.json();
-  Object.fromEntries(Object.entries(updatedPrices).map(([key, value]) => [key, value.USD]))
-
-  // console.log(updatedPrices);
-
-  Object.entries(updatedPrices).forEach(([currency, newPrice]) => {
-    console.log(newPrice);
-    const handler = tickersHandlers.get(currency) ?? [];
-    handler.forEach(fn => fn(newPrice.USD))
-  })
+const initSocket = () => {
+  socket = new WebSocket(`wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`)
 }
 
+function subscribeToTikerOnWs(ticker) {
+  const message = JSON.stringify({
+    "action": "SubAdd",
+    "subs": [`5~CCCAGG~${ticker}~USD`]
+  })
+  if (socket && socket.readyState === socket.OPEN) {
+    socket.send(message);
+    return
+  }
+  if (socket) {
+    socket.addEventListener('open', () => {
+      socket.send(message);
+    }, { once: true })
+  }
+}
 
 export const subscribeToTiker = (ticker, cb) => {
   const subscriber = tickersHandlers.get(ticker, []) || []
   tickersHandlers.set(ticker, [...subscriber, cb])
-  console.log(tickersHandlers);
+  subscribeToTikerOnWs(ticker)
 };
 
 export const unsubscribeFromTiker = (ticker) => {
@@ -53,8 +55,19 @@ export const unsubscribeFromTiker = (ticker) => {
   // tickersHandlers.set(ticker, subscriber.filter(fn !== cb))
 }
 
+if (process.client) {
+  initSocket();
+}
+if (socket) {
+  const AGGRINDEX = "5";
+  socket.addEventListener("message", e => {
+    const { TYPE: type, FROMSYMBOL: currency, PRICE: newPrice } = JSON.parse(e.data)
+    if (type !== AGGRINDEX) {
+      return
+    }
+    // debugger
+    const handler = tickersHandlers.get(currency) ?? [];
+    handler.forEach(fn => fn(newPrice))
+  })
+}
 
-setInterval(() => {
-  loadTicker()
-}, 5000);
-console.log(tickersHandlers);

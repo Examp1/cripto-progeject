@@ -153,7 +153,7 @@ export default {
     },
     formatPrice(price) {
       if (price !== "-") {
-        return price > 1 ? price.toFixed(2) : price.toPrecision(2);
+        return price
       }
       return "-";
     },
@@ -165,7 +165,9 @@ export default {
         intervalId: null, // Добавляем переменную для хранения идентификатора интервала
       };
       this.tickers.push(currentTicker);
-      subscribeToTiker(currentTicker.name, newPrice => this.updateTicker(currentTicker.name, newPrice));
+      subscribeToTiker(currentTicker.name, (newPrice) =>
+        this.updateTicker(currentTicker.name, newPrice)
+      );
       // this.updateTicker(currentTicker)
     },
     deleteTicker(tickerToRemove) {
@@ -183,6 +185,9 @@ export default {
       this.selectedTicker = ticker;
       this.graph = [];
     },
+  },
+  mounted() {
+    // this.initSocket();
   },
   created() {
     // setInterval(this.updateTicker, 5000);

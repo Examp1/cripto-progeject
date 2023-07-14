@@ -1,4 +1,5 @@
-import Vue from 'vue'
-import Flickity from 'vue-flickity'
+import WebSocket from 'websocket';
 
-Vue.component('Flickity', Flickity)
+export default ({ app }) => {
+  app.$websocket = WebSocket;
+};
