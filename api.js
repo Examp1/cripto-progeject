@@ -1,22 +1,4 @@
-// получать стоимость криповалютных пар с апи ( то что сейчас реализовано)
-// const API_KEy = "0324c7a2351023626af2970665500fa37f105e33714c76344a8611428cf8e336"
-
-
-// // TODO refactor to use URLSearchParams
-// export const loadTicker = async tickers => {
-//   const r = await fetch(
-//     `https://min-api.cryptocompare.com/data/pricemulti?fsyms=${tickers.join(",")}&tsyms=USD&api_key=${API_KEy}`
-//   );
-//   const tickerData = await r.json();
-//   return Object.fromEntries(Object.entries(tickerData).map(([key, value]) => [key, value.USD]))
-
-// }
-
-// получать обновления стоимости криптовалюитных пар с апишки ( что что нужно на самом деле)
-
 const API_KEY = "db08fd4dc7fe107d9e23172806cf758b07d49e410df0ac43425506f1b8068bc0"
-
-// const socket = new WebSocket(`wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`)
 
 const tickersHandlers = new Map();
 
@@ -27,22 +9,30 @@ const initSocket = () => {
   socket = new WebSocket(`wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`)
 }
 
-function subscribeToTikerOnWs(ticker) {
-  const message = JSON.stringify({
-    "action": "SubAdd",
-    "subs": [`5~CCCAGG~${ticker}~USD`]
-  })
+const sendToWebSocket = (message) => {
+  const stringifyMSG = JSON.stringify(message)
   if (socket && socket.readyState === socket.OPEN) {
-    socket.send(message);
+    socket.send(stringifyMSG);
     return
   }
   if (socket) {
     socket.addEventListener('open', () => {
-      socket.send(message);
+      socket.send(stringifyMSG);
     }, { once: true })
   }
 }
-
+const subscribeToTikerOnWs = (ticker) => {
+  sendToWebSocket({
+    "action": "SubAdd",
+    "subs": [`5~CCCAGG~${ticker}~USD`]
+  })
+}
+const unsubscribeToTikerOnWs = (ticker) => {
+  sendToWebSocket({
+    "action": "SubRemove",
+    "subs": [`5~CCCAGG~${ticker}~USD`]
+  })
+}
 export const subscribeToTiker = (ticker, cb) => {
   const subscriber = tickersHandlers.get(ticker, []) || []
   tickersHandlers.set(ticker, [...subscriber, cb])
@@ -51,8 +41,7 @@ export const subscribeToTiker = (ticker, cb) => {
 
 export const unsubscribeFromTiker = (ticker) => {
   tickersHandlers.delete(ticker)
-  // const subscriber = tickersHandlers.get(ticker, []) || []
-  // tickersHandlers.set(ticker, subscriber.filter(fn !== cb))
+  unsubscribeToTikerOnWs(ticker)
 }
 
 if (process.client) {
